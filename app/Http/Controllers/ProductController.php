@@ -7,6 +7,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+const ACTIVE = 1;
+const SOLD = 2;
+
 class ProductController extends Controller
 {
     /**
@@ -39,7 +42,7 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        return Product::where('id', $id)->get();
+        return Product::find($id);
     }
 
     /**
@@ -73,60 +76,55 @@ class ProductController extends Controller
             'category_id' => 'required|int'
         ]);
 
-        $userId = Auth::user()->id;
+        $user = Auth::user();
 
         $product = Product::create([
             'name' => $fields['name'],
             'price' => $fields['price'],
             'category_id' => $fields['category_id'],
-            'seller_user_id' => $userId,
-            'owner_user_id' => $userId,
-            'status_id' => 1
+            'seller_user_id' => $user->id,
+            'owner_user_id' => $user->id,
+            'status_id' => ACTIVE
         ]);
 
         $response = [
             'product ' => $product ,
-            'user' => $userId
+            'user' => $user->id
         ];
 
         return response($response,201);
     }
 
     public function myProducts(){
-        $userId = Auth::user()->id;
-        return  Product::where('owner_user_id', $userId)->get();
+        $user = Auth::user();
+        return  Product::where('owner_user_id', $user->id)->get();
     }
 
     public  function  buyProduct($id){
-        $product = Product::where('id',$id)->get();
-        $userId = Auth::user()->id;
-        $sellerUserId = $product->first()->seller_user_id;
-        $sellerUserIdBalance = User::where('id',$sellerUserId)->get()->first()->balance;
-        $productOwnerId = $product->first()->owner_user_id;
-        $productPrice = $product->first()->price;
-        $userBalance = User::where('id',$userId)->get()->first()->balance;
+        $product = Product::find($id);
+        $seller = User::find($product->seller_user_id) ;
+        $user = Auth::user();
 
-        if($productPrice <= $userBalance && $product->first()->status_id == 1){
-            if($userId != $productOwnerId){
-                Product::where('id', $id)->update(array('owner_user_id' => $userId));
-                Product::where('id', $id)->update(array('seller_user_id' => $userId));
-                Product::where('id', $id)->update(array('status_id' => 2));
-                User::where('id', $userId)->update(array('balance' => $userBalance-$productPrice));
-                User::where('id', $sellerUserId)->update(array('balance' => $sellerUserIdBalance+$productPrice));
-            }
-            else{
-                $response = [
-                    'error'=>'You cant buy your product'
-                ];
-                return response($response,201);
-            }
-            return  Product::where('id',$id)->get();
+        if($user->id == $product->owner_user_id){
+            return 'You cant buy your product';
         }
-        $response = [
-            'error'=>'Not enough money or product sold'
-        ];
+        elseif($product->status_id == SOLD){
+            return 'This product is sold';
+        }
+        elseif ($user->balance < $product->price) {
+            return 'Not enough money';
+        }
+        else{
+            $product->owner_user_id = $user->id;
+            $product->buyer_user_id = $user->id;
+            $product->status_id = SOLD;
+            $user->balance -= $product->price;
+            $seller->balance += $product->price;
 
-        return response($response,201);
-
+            $user->save();
+            $seller->save();
+            $product->save();
+        }
+        return $product;
     }
 }

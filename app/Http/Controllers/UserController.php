@@ -37,7 +37,7 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        return User::where('id', $id)->get();
+        return User::find($id);
 
     }
 
@@ -66,5 +66,19 @@ class UserController extends Controller
 
     public function myData(){
         return Auth::user();
+    }
+
+    public function balance(Request $request){
+        $fields = $request->validate([
+            'amount' => 'required|int',
+        ]);
+
+        $user = Auth::user();
+        $user->balance += $fields['amount'];
+        $user->save();
+        $response = [
+            'balance' => $user->balance
+        ];
+        return response($response,201);
     }
 }
