@@ -48,9 +48,25 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        //
+        $user = Auth::user();
+        $fields = $request->validate([
+            'name' => 'required|string',
+            'password' => 'string|confirmed'
+        ]);
+
+        $user->name = $fields['name'];
+        if($request->password){
+            $user->password = bcrypt($fields['password']);
+        }
+        $user->save();
+
+        $response = [
+            'user' => $user,
+        ];
+
+        return response($response,201);
     }
 
     /**
