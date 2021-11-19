@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use const App\Http\Controllers\ACTIVE;
 use const App\Http\Controllers\SOLD;
@@ -30,19 +31,24 @@ class Product extends Model
         'price'
     ];
 
-    public function seller_user(){
+    public function seller_user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
-    public function buyer_user(){
+    public function buyer_user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
-    public function owner_user(){
+    public function owner_user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
-    public function category(){
+    public function category(): BelongsTo
+    {
         return $this->belongsTo(Category::class);
     }
-    public function status(){
+    public function status(): BelongsTo
+    {
         return $this->belongsTo(Status::class);
     }
 
@@ -70,8 +76,9 @@ class Product extends Model
             $product->save();
         }
 
-        return $product->load(['category:id,title']);;
+        return $product->load(['category:id,title']);
     }
+
     public function editProduct($user,$product,$request){
         $request->validate([
             'name' => 'string',

@@ -6,7 +6,7 @@ use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\PostsController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -44,7 +44,6 @@ Route::group(['middleware' => ['auth:sanctum']], function (){
 });
 
 Route::apiResources([
-    'posts' => PostsController::class,
 ]);
 //register
 Route::post('/register', [AuthController::class, 'register']);

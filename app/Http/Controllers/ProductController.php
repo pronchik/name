@@ -6,9 +6,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 const ACTIVE = 1;
@@ -19,13 +17,11 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return Builder[]|Collection|Response
+     * @return Builder[]|Collection
      */
     //те продукты которые можно купить
     public function index(Request $request)
     {
-        //pagination
-        //return Product::where('status_id',1)->paginate(5);
         $product_query = Product::with(['category']);
         if($request->name){
             $product_query->where('name','LIKE','%'.$request->name.'%');
@@ -46,9 +42,9 @@ class ProductController extends Controller
      * Store a newly created resource in storage.
      *
      * @param Request $request
-     * @return JsonResponse
+     * @return Product
      */
-    public function store(Request $request)
+    public function store(Request $request): Product
     {
         $user = Auth::user();
         $product = new Product();
@@ -58,22 +54,22 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
-     * @return Response
+     * @param int $id
+     * @return Product
      */
-    public function show($id)
+    public function show(int $id): Product
     {
-        return Product::find($id);
+        return Product::findOrFail($id);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param Request $request
-     * @param  int  $id
-     * @return Response
+     * @param int $id
+     * @return Product
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id): Product
     {
         $user = Auth::user();
         $product = Product::find($id);
@@ -84,10 +80,10 @@ class ProductController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param int $id
      * @return string
      */
-    public function destroy($id)
+    public function destroy(int $id): string
     {
         $product = Product::find($id);
         $user = Auth::user();
@@ -107,7 +103,7 @@ class ProductController extends Controller
 
     public function myProducts(Request $request){
         $user = Auth::user();
-        $product_query = Product::where('owner_user_id', $user->id)->with(['category']);;
+        $product_query = Product::where('owner_user_id', $user->id)->with(['category']);
         if($request->name){
             $product_query->where('name','LIKE','%'.$request->name.'%');
         }
