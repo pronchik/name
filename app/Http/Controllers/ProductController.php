@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\createProductRequest;
+use App\Http\Requests\editProductRequest;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -41,14 +43,20 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param Request $request
+     * @param createProductRequest $request
      * @return Product
      */
-    public function store(Request $request): Product
+    public function store(createProductRequest $request): Product
     {
         $user = Auth::user();
-        $product = new Product();
-        return $product->createProduct($user,$request,$product);
+        $product = Product::create($request->validated());
+
+        $product->seller_user_id = $user->id;
+        $product->owner_user_id = $user->id;
+        $product->status_id = ACTIVE;
+
+        $product->save();
+        return $product;
     }
 
     /**
@@ -65,12 +73,13 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param Request $request
+     * @param editProductRequest $request
      * @param int $id
      * @return Product
      */
-    public function update(Request $request, int $id): Product
+    public function update(editProductRequest $request, int $id)
     {
+
         $user = Auth::user();
         $product = Product::find($id);
 

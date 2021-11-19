@@ -80,11 +80,6 @@ class Product extends Model
     }
 
     public function editProduct($user,$product,$request){
-        $request->validate([
-            'name' => 'string',
-            'price' => 'int',
-            'category_id' => 'int'
-        ]);
         if($product->status_id==SOLD){
             return 'This product was sold';
         }
@@ -104,23 +99,6 @@ class Product extends Model
             $product->save();
         }
         return response([$user,$product,$request]);
-    }
-
-    public function createProduct($user,$request,$product){
-        $request->validate([
-            'name' => 'required|string',
-            'price' => 'required|int',
-            'category_id' => 'required|int'
-        ]);
-        $product->name = $request->name;
-        $product->price = $request->price;
-        $product->category_id = $request->category_id;
-        $product->seller_user_id = $user->id;
-        $product->owner_user_id = $user->id;
-        $product->status_id = ACTIVE;
-
-        $product->save();
-        return $product;
     }
 
     public function getMyProducts($request,$product){
